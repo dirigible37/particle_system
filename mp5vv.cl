@@ -41,10 +41,10 @@ __kernel void VVerlet(__global float4* p, __global float4* v, __global float* r)
 
 	for(int steps=0;steps<STEPS_PER_RENDER;steps++){
 		force = getforce(p[i],v[i]);
-		v[i] += force*DELTA_T/2.0;
+		v[i] += force*DELTA_T/2.0f;
 		p[i] += v[i]*DELTA_T;
 		force = getforce(p[i],v[i]);
-		v[i] += force*DELTA_T/2.0;
+		v[i] += force*DELTA_T/2.0f;
 
 		radius = sqrt(p[i].x*p[i].x + p[i].z*p[i].z);
 		if((radius< 0.05f)||(p[i].y<0.0f)){
@@ -72,7 +72,7 @@ __kernel void VVerlet(__global float4* p, __global float4* v, __global float* r)
 				p[i].x = -0.49;
 				v[i].x = v[i].x - ((1.0 + RESTITUTION)*v[i].x);
 				mylength = sqrt(v[i].y*v[i].y + v[i].z*v[i].z);
-				if(mylength>0.0){
+				if(mylength>0.0f){
 					v[i].y -= FRICTION*v[i].y/mylength;
 					v[i].z -= FRICTION*v[i].z/mylength;
 				}
