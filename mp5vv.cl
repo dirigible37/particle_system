@@ -10,9 +10,8 @@
 #define V_DRAG (4.0f)
 
 //
-// Circle is x^2 + z^2 - r^2 = 0, and so normal is (2x,2z) and
-// tangent is (-2z,2x).  Subtract (x,z) so that net force in 
-// the normal dir (dot (2x,2z)) is negative ... then add drag.
+// Use the vector to the center of the sphere to calculate gravitational force,
+// then remove drag and the gravitational pull of the earth
 //
 float4 getforce(float4 tocenter, float4 vel)
 {
@@ -37,7 +36,7 @@ float goober(float prev)
 	return(fmod(prev,MOD)/MOD);
 }
 
-__kernel void VVerlet(__global float4* p, __global float4* v, __global float* r, __global float4 center)
+__kernel void VVerlet(__global float4* p, __global float4* v, __global float* r, __local float4 center)
 {
 	unsigned int i = get_global_id(0);
 	float4 force, zoom;
