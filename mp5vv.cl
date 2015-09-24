@@ -5,7 +5,9 @@
 #define FRICTION 0.4f
 #define RESTITUTION 0.7f
 
-#define GRAVITY_CONSTANT 1.0f // scale gravitational pull to sphere
+#define GRAVITY_CONSTANT 1.0f // scale of gravitational pull to sphere
+#define SPHERE_RADIUS 1.0f
+
 #define EPS_DOWN (-0.2f) // gravity
 #define V_DRAG (4.0f)
 
@@ -36,7 +38,7 @@ float goober(float prev)
 	return(fmod(prev,MOD)/MOD);
 }
 
-__kernel void VVerlet(__global float4* p, __global float4* v, __global float* r, __local float4 center)
+__kernel void VVerlet(__global float4* p, __global float4* v, __global float* r, float4 center)
 {
 	unsigned int i = get_global_id(0);
 	float4 force, zoom;
