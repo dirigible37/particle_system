@@ -5,6 +5,7 @@
 #define FRICTION 0.4f
 #define RESTITUTION 0.7f
 
+#define GRAVITY_CONSTANT 1.0f // scale gravitational pull to sphere
 #define EPS_DOWN (-0.2f) // gravity
 #define V_DRAG (4.0f)
 
@@ -13,14 +14,17 @@
 // tangent is (-2z,2x).  Subtract (x,z) so that net force in 
 // the normal dir (dot (2x,2z)) is negative ... then add drag.
 //
-float4 getforce(float4 pos, float4 vel)
+float4 getforce(float4 tocenter, float4 vel)
 {
-	float4 force;
+    float4 force;
 
-	force.x = (-2.0f*pos.z - pos.x) - V_DRAG*vel.x;
-	force.y = EPS_DOWN -V_DRAG*vel.y;
-	force.z = (2.0f*pos.x - pos.z) -V_DRAG*vel.z;
-	force.w = 1.0f;
+    // Calculate gravitational force based on vector to center of sphere
+    force = (GRAVITY_CONSTANT*MASS/dot(tocenter,tocenter)) * normalize(tocenter);
+    // Take away drag
+    force -= V_DRAG*vel;
+    // Add downward gravity
+    force.y += EPS_DOWN;
+    
 	return(force);
 }
 
@@ -33,19 +37,20 @@ float goober(float prev)
 	return(fmod(prev,MOD)/MOD);
 }
 
-__kernel void VVerlet(__global float4* p, __global float4* v, __global float* r)
+__kernel void VVerlet(__global float4* p, __global float4* v, __global float* r, __global float4 center)
 {
 	unsigned int i = get_global_id(0);
 	float4 force, zoom;
-	float radius, mylength;
+	//float radius, mylength;
 
 	for(int steps=0;steps<STEPS_PER_RENDER;steps++){
-		force = getforce(p[i],v[i]);
+		force = getforce(center-p[i],v[i]);
 		v[i] += force*DELTA_T/2.0f;
 		p[i] += v[i]*DELTA_T;
-		force = getforce(p[i],v[i]);
+		force = getforce(center-p[i],v[i]);
 		v[i] += force*DELTA_T/2.0f;
 
+        /*
 		radius = sqrt(p[i].x*p[i].x + p[i].z*p[i].z);
 		if((radius< 0.05f)||(p[i].y<0.0f)){
 			// regenerate position and velocity
@@ -78,6 +83,7 @@ __kernel void VVerlet(__global float4* p, __global float4* v, __global float* r)
 				}
 			}
 		}
+        */
 	}
-	p[i].w = 1.0f;
+	//p[i].w = 1.0f;
 }
