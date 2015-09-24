@@ -239,6 +239,8 @@ void init_particles()
 	}
 }
 
+float *center;
+
 void InitCL()
 {
 	cl_platform_id myplatform;
@@ -247,6 +249,8 @@ void InitCL()
 	char* oclsource; 
 	size_t program_length;
 	unsigned int gpudevcount;
+	center = (float*)calloc(4, sizeof(float));
+	center[3] = 1.0;
 
 	err = RGUGetPlatformID(&myplatform);
 
@@ -292,6 +296,7 @@ void InitCL()
 	clSetKernelArg(mykernel,0,sizeof(cl_mem),(void *)&oclvbo);
 	clSetKernelArg(mykernel,1,sizeof(cl_mem),(void *)&dev_velocity);
 	clSetKernelArg(mykernel,2,sizeof(cl_mem),(void *)&dev_rseed);
+	clSetKernelArg(mykernel,3,sizeof(float)*4, &center);
 }
 
 void cleanup()
