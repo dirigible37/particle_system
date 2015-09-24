@@ -272,7 +272,12 @@ void InitCL()
 	clBuildProgram(myprogram, 0, NULL, NULL, NULL, NULL);
 	mykernel = clCreateKernel(myprogram, "VVerlet", &err);
 	if(err==CL_SUCCESS) fprintf(stderr,"build ok\n");
-	else fprintf(stderr,"build err %d\n",err);
+	else {
+        fprintf(stderr,"build err %d\n",err);
+        char log[512];
+        clGetProgramBuildInfo(myprogram,mydevice[0],CL_PROGRAM_BUILD_LOG,sizeof(log),log,NULL);
+	    printf("%s", log);
+    }
 
 	glBindBuffer(GL_ARRAY_BUFFER, OGL_VBO);
 	glBufferData(GL_ARRAY_BUFFER, DATA_SIZE, &host_position[0][0], GL_DYNAMIC_DRAW);
