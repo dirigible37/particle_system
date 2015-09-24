@@ -239,7 +239,7 @@ void init_particles()
 	}
 }
 
-float *center;
+float center[4] = {0.0, 0.0, 0.0, 1.0};
 
 void InitCL()
 {
@@ -249,8 +249,6 @@ void InitCL()
 	char* oclsource; 
 	size_t program_length;
 	unsigned int gpudevcount;
-	center = (float*)calloc(4, sizeof(float));
-	center[3] = 1.0;
 
 	err = RGUGetPlatformID(&myplatform);
 
@@ -293,10 +291,10 @@ void InitCL()
 	dev_rseed = clCreateBuffer(mycontext,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
 			NUMBER_OF_PARTICLES*sizeof(float),&host_rseed[0],&err); 
 
-	clSetKernelArg(mykernel,0,sizeof(cl_mem),(void *)&oclvbo);
-	clSetKernelArg(mykernel,1,sizeof(cl_mem),(void *)&dev_velocity);
-	clSetKernelArg(mykernel,2,sizeof(cl_mem),(void *)&dev_rseed);
-	clSetKernelArg(mykernel,3,sizeof(float)*4, &center);
+	clSetKernelArg(mykernel,0,sizeof(cl_mem),&oclvbo);
+	clSetKernelArg(mykernel,1,sizeof(cl_mem),&dev_velocity);
+	clSetKernelArg(mykernel,2,sizeof(cl_mem),&dev_rseed);
+	clSetKernelArg(mykernel,3,sizeof(float)*4,center);
 }
 
 void cleanup()
