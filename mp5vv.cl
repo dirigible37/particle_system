@@ -5,11 +5,11 @@
 #define FRICTION 0.4f
 #define RESTITUTION 0.7f
 
-#define GRAVITY_CONSTANT 10000000.0f // scale of gravitational pull to sphere
+#define GRAVITY_CONSTANT 1.0f // scale of gravitational pull to sphere
 #define SPHERE_RADIUS 1.0f
 
-#define EPS_DOWN (-0.0f) // gravity
-#define V_DRAG (10.0f)
+#define EPS_DOWN (-0.2f) // gravity
+#define V_DRAG (4.0f)
 
 //
 // Use the vector to the center of the sphere to calculate gravitational force,
