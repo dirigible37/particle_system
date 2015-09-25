@@ -36,6 +36,8 @@ size_t lws[] = {128};
 float host_position[NUMBER_OF_PARTICLES][4];
 float host_velocity[NUMBER_OF_PARTICLES][4];
 float host_rseed[NUMBER_OF_PARTICLES];
+float center[4] = {0.0, 0.0, 0.0, 1.0};
+float angle = 0.0f;
 
 void do_kernel()
 {
@@ -75,6 +77,9 @@ void do_material_points()
 void mydisplayfunc()
 {
 	void *ptr;
+    angle += 0.01f;
+    center[1] = sinf(angle);
+	clSetKernelArg(mykernel,3,sizeof(float)*4,center);
 	glFinish();
 	clEnqueueAcquireGLObjects(mycommandqueue,1,&oclvbo,0,0,0);
 	do_kernel();
@@ -239,8 +244,6 @@ void init_particles()
 	}
 }
 
-float center[4] = {0.0, 0.0, 0.0, 1.0};
-
 void InitCL()
 {
 	cl_platform_id myplatform;
@@ -294,7 +297,6 @@ void InitCL()
 	clSetKernelArg(mykernel,0,sizeof(cl_mem),&oclvbo);
 	clSetKernelArg(mykernel,1,sizeof(cl_mem),&dev_velocity);
 	clSetKernelArg(mykernel,2,sizeof(cl_mem),&dev_rseed);
-	clSetKernelArg(mykernel,3,sizeof(float)*4,center);
 }
 
 void cleanup()

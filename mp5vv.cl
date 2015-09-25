@@ -3,13 +3,13 @@
 #define MASS 1.0f
 #define DELTA_T (0.002f)
 #define FRICTION 0.4f
-#define RESTITUTION 0.7f
+#define RESTITUTION 2.0f
 
 #define GRAVITY_CONSTANT 1.0f // scale of gravitational pull to sphere
-#define SPHERE_RADIUS 1.0f
+#define SPHERE_RADIUS 0.5f
 
-#define EPS_DOWN (-0.2f) // gravity
-#define V_DRAG (4.0f)
+#define EPS_DOWN (-0.25f) // gravity
+#define V_DRAG (2.0f)
 
 //
 // Use the vector to the center of the sphere to calculate gravitational force,
@@ -41,8 +41,8 @@ float goober(float prev)
 __kernel void VVerlet(__global float4* p, __global float4* v, __global float* r, float4 center)
 {
 	unsigned int i = get_global_id(0);
-	float4 force, zoom;
-	//float radius, mylength;
+	float4 force, normal, zoom;
+	float dist;
 
 	for(int steps=0;steps<STEPS_PER_RENDER;steps++){
 		force = getforce(center-p[i],v[i]);
@@ -50,7 +50,23 @@ __kernel void VVerlet(__global float4* p, __global float4* v, __global float* r,
 		p[i] += v[i]*DELTA_T;
 		force = getforce(center-p[i],v[i]);
 		v[i] += force*DELTA_T/2.0f;
-
+        
+        // Check for collision with sphere
+        normal = p[i] - center;
+        dist = length(normal);
+        if (dist < SPHERE_RADIUS) {
+            // Normalize normal and move point to outside of sphere
+            normal /= dist;
+            p[i] = center + normal*SPHERE_RADIUS;
+            // Get the component of the velocity in the direction of the normal
+            dist = dot(v[i], normal);
+            if (dist < 0) {
+                zoom = dist * normal;
+                // Bounce it out with friction
+                v[i] -= (1.0f+RESTITUTION)*zoom + FRICTION*normalize(v[i]-zoom);
+            }
+        }
+        
         /*
 		radius = sqrt(p[i].x*p[i].x + p[i].z*p[i].z);
 		if((radius< 0.05f)||(p[i].y<0.0f)){
