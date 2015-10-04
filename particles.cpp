@@ -82,29 +82,6 @@ void render_ball()
         glPopMatrix();
 }
 
-float i = 0;
-float j = 0.99;
-void movesphere()
-{
-	if(i<1.0) {
-        	glTranslatef(0, 0.01, 0);
-		i += 0.01;
-	}
-
-	if(i>1.0 && j<1.0 && j>-1.0) {
-		glTranslatef(0, -0.01, 0);
-		j -= 0.01;
-	}
-
-	if(j<-1.0) {
-		i=-1.0;
-		j=0.99;
-	}
-	
-	glutPostRedisplay();
-}
-
-
 void mydisplayfunc()
 {
 	void *ptr;
@@ -363,7 +340,6 @@ int main(int argc,char **argv)
 	InitGL(argc, argv); 
 	InitCL(); 
 	glutDisplayFunc(mydisplayfunc);
-	//glutIdleFunc(movesphere);
 	glutKeyboardFunc(getout);
 	glutMainLoop();
 }
