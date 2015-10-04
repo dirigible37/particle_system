@@ -39,7 +39,7 @@ float4 getforce(float4 tocenter, float4 vel)
 // Make a particle bounce off a plane, given the plane's normal and distance from origin
 // Distance from origin may be negative, meaning the normal points towards the origin
 //
-static inline void planecollision(__global float4 *p, __global float4 *v, float4 normal, float dist) {
+void planecollision(__global float4 *p, __global float4 *v, float4 normal, float dist) {
     float p_component = dot(*p, normal);
     if (p_component < dist) {
         // Force particle to surface
@@ -59,7 +59,7 @@ float goober(float prev)
 	return(fmod(prev,MOD)/MOD);
 }
 
-__kernel void VVerlet(__global float4* p, __global float4* v, __global float* r, float4 center)
+__kernel void VVerlet(__global float4* p, __global float4* c, __global float4* v, __global float* r, float4 center)
 {
 	unsigned int i = get_global_id(0);
 	float4 force, normal, zoom;
@@ -75,6 +75,10 @@ __kernel void VVerlet(__global float4* p, __global float4* v, __global float* r,
         // Check for collision with sphere
         normal = p[i] - center;
         dist = length(normal);
+
+        // Also set color or something
+        c[i] = normal/4 + (float4)(0.5f,0.5f,0.5f,0.0f);
+
         if (dist < SPHERE_RADIUS) {
             // Normalize normal and move point to outside of sphere
             normal /= dist;

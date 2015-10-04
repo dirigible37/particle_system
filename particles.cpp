@@ -22,6 +22,7 @@
 #define BORDER 4
 
 GLuint OGL_VBO = 1;
+GLuint OGL_CBO = 2;
 #define NUMBER_OF_PARTICLES 512*512
 #define DATA_SIZE (NUMBER_OF_PARTICLES*4*sizeof(float)) 
 
@@ -29,11 +30,12 @@ cl_context mycontext;
 cl_command_queue mycommandqueue;
 cl_kernel mykernel;
 cl_program myprogram;
-cl_mem oclvbo, dev_velocity, dev_rseed;
+cl_mem oclvbo, oclcbo, dev_velocity, dev_rseed;
 size_t worksize[] = {NUMBER_OF_PARTICLES}; 
 size_t lws[] = {128}; 
 
 float host_position[NUMBER_OF_PARTICLES][4];
+float host_color[NUMBER_OF_PARTICLES][4];
 float host_velocity[NUMBER_OF_PARTICLES][4];
 float host_rseed[NUMBER_OF_PARTICLES];
 float center[4] = {0.0, 0.0, 0.0, 1.0};
@@ -89,11 +91,13 @@ void mydisplayfunc()
 	center[0] = cosf(angle);
     center[1] = 0.5f;
 	center[2] = sinf(angle);	
-	clSetKernelArg(mykernel,3,sizeof(float)*4,center);
+	clSetKernelArg(mykernel,4,sizeof(float)*4,center);
 	glFinish();
-	clEnqueueAcquireGLObjects(mycommandqueue,1,&oclvbo,0,0,0);
+	clEnqueueAcquireGLObjects(mycommandqueue, 1, &oclvbo, 0,0,0);
+	clEnqueueAcquireGLObjects(mycommandqueue, 1, &oclcbo, 0,0,0);
 	do_kernel();
 	clEnqueueReleaseGLObjects(mycommandqueue, 1, &oclvbo, 0,0,0);
+	clEnqueueReleaseGLObjects(mycommandqueue, 1, &oclcbo, 0,0,0);
 	clFinish(mycommandqueue);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -119,14 +123,19 @@ void mydisplayfunc()
 	glEnable(GL_DEPTH_TEST);
 
 	glDisable(GL_BLEND);
-	glEnable(GL_LIGHTING);
-	do_material_points();
+	//glEnable(GL_LIGHTING);
+	//do_material_points();
 	glBindBuffer(GL_ARRAY_BUFFER,OGL_VBO);
 	glVertexPointer(4,GL_FLOAT,0,0);
 	glEnableClientState(GL_VERTEX_ARRAY);
+    glBindBuffer(GL_ARRAY_BUFFER,OGL_CBO);
+    glColorPointer(4,GL_FLOAT,0,0);
+    glEnableClientState(GL_COLOR_ARRAY);
 	glDrawArrays(GL_POINTS, 0, NUMBER_OF_PARTICLES);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 
+    glEnable(GL_LIGHTING);
 	glutSwapBuffers();
 	glutPostRedisplay();
 }
@@ -251,6 +260,10 @@ void init_particles()
 		host_position[i][1] = (genrand());//0.2*genrand()+0.8;
 		host_position[i][2] = 2.0*(genrand()-0.5);
 		host_position[i][3] = 1.0;
+        host_color[i][0] = 1.0;
+        host_color[i][1] = 1.0;
+        host_color[i][2] = 0.1;
+        host_color[i][3] = 0.0;
 		for(j=0;j<4;j++) host_velocity[i][j] = 0.0;
 		host_rseed[i] = genrand();
 	}
@@ -300,6 +313,10 @@ void InitCL()
 	glBufferData(GL_ARRAY_BUFFER, DATA_SIZE, &host_position[0][0], GL_DYNAMIC_DRAW);
 	oclvbo = clCreateFromGLBuffer(mycontext,CL_MEM_WRITE_ONLY,OGL_VBO,&err);
 
+    glBindBuffer(GL_ARRAY_BUFFER, OGL_CBO);
+    glBufferData(GL_ARRAY_BUFFER, DATA_SIZE, &host_color[0][0], GL_DYNAMIC_DRAW);
+    oclcbo = clCreateFromGLBuffer(mycontext,CL_MEM_WRITE_ONLY,OGL_CBO,&err);
+
 	dev_velocity = clCreateBuffer(mycontext,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
 			DATA_SIZE,&host_velocity[0][0],&err); 
 
@@ -307,8 +324,9 @@ void InitCL()
 			NUMBER_OF_PARTICLES*sizeof(float),&host_rseed[0],&err); 
 
 	clSetKernelArg(mykernel,0,sizeof(cl_mem),&oclvbo);
-	clSetKernelArg(mykernel,1,sizeof(cl_mem),&dev_velocity);
-	clSetKernelArg(mykernel,2,sizeof(cl_mem),&dev_rseed);
+    clSetKernelArg(mykernel,1,sizeof(cl_mem),&oclcbo);
+	clSetKernelArg(mykernel,2,sizeof(cl_mem),&dev_velocity);
+	clSetKernelArg(mykernel,3,sizeof(cl_mem),&dev_rseed);
 }
 
 void cleanup()
@@ -318,6 +336,7 @@ void cleanup()
 	clReleaseCommandQueue(mycommandqueue);
 	glBindBuffer(GL_ARRAY_BUFFER,OGL_VBO);
 	glDeleteBuffers(1,&OGL_VBO);
+    glDeleteBuffers(1,&OGL_CBO);
 	clReleaseMemObject(oclvbo);
 	clReleaseMemObject(dev_velocity);
 	clReleaseMemObject(dev_rseed);
