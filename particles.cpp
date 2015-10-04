@@ -74,6 +74,37 @@ void do_material_points()
 	glMaterialfv(GL_FRONT,GL_SHININESS,mat_shininess);
 }
 
+void render_ball()
+{
+	glPushMatrix();
+        glColor3f (0, 0.2, 1);
+        glutWireSphere(0.5, 10, 10);
+        glPopMatrix();
+}
+
+float i = 0;
+float j = 0.99;
+void movesphere()
+{
+	if(i<1.0) {
+        	glTranslatef(0, 0.01, 0);
+		i += 0.01;
+	}
+
+	if(i>1.0 && j<1.0 && j>-1.0) {
+		glTranslatef(0, -0.01, 0);
+		j -= 0.01;
+	}
+
+	if(j<-1.0) {
+		i=-1.0;
+		j=0.99;
+	}
+	
+	glutPostRedisplay();
+}
+
+
 void mydisplayfunc()
 {
 	void *ptr;
@@ -88,6 +119,7 @@ void mydisplayfunc()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	do_material();
+	render_ball();
 	glCallList(WALL);
 
 	// Frame is drawn to blend with background.
@@ -115,6 +147,7 @@ void mydisplayfunc()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glDrawArrays(GL_POINTS, 0, NUMBER_OF_PARTICLES);
 	glDisableClientState(GL_VERTEX_ARRAY);
+
 	glutSwapBuffers();
 	glutPostRedisplay();
 }
@@ -330,6 +363,7 @@ int main(int argc,char **argv)
 	InitGL(argc, argv); 
 	InitCL(); 
 	glutDisplayFunc(mydisplayfunc);
+	glutIdleFunc(movesphere);
 	glutKeyboardFunc(getout);
 	glutMainLoop();
 }
