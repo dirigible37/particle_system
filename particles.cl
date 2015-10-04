@@ -100,41 +100,5 @@ __kernel void VVerlet(__global float4* p, __global float4* c, __global float4* v
         planecollision(&p[i], &v[i], (float4)(0.0f,-1.0f,0.0f,0.0f), -CEIL_DIST);
         planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,1.0f,0.0f), -WALL_DIST);
         planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,-1.0f,0.0f), -WALL_DIST);
-        
-        /*
-		radius = sqrt(p[i].x*p[i].x + p[i].z*p[i].z);
-		if((radius< 0.05f)||(p[i].y<0.0f)){
-			// regenerate position and velocity
-			zoom.x = r[i]+0.2f;
-			r[i] = goober(r[i]);
-			zoom.y = 0.2f*r[i]+0.8f;
-			r[i] = goober(r[i]);
-			zoom.z = 2.0f*(r[i]-0.5f);
-			p[i] = zoom;
-			v[i] = (float4)(0.0f,0.0f,0.0f,1.0f);
-			r[i] = goober(r[i]);
-		}
-		else{
-			// Check for wall collision.  Usually it's (p - q) o n < 0, 
-			// where p is the point in question and q is a point in
-			// the plane with normal n; but here q = (-.5,0,0) 
-			// and n = (1,0,0), so it's simply p.x < -.5.
-			if(p[i].x<-0.5){
-				// Bounce the point.  Usually it's 
-				// vout = vin - (1+r)(vin o n)n
-				//      - f*(vin - (vin o n)n)/||vin - (vin o n)n||
-				// but here (vin o n)n) = (v[i].x,0,0), and so
-				// vin - (vin o n)n = (0,v[i].y,v[i].z).
-				p[i].x = -0.49;
-				v[i].x = v[i].x - ((1.0 + RESTITUTION)*v[i].x);
-				mylength = sqrt(v[i].y*v[i].y + v[i].z*v[i].z);
-				if(mylength>0.0f){
-					v[i].y -= FRICTION*v[i].y/mylength;
-					v[i].z -= FRICTION*v[i].z/mylength;
-				}
-			}
-		}
-        */
 	}
-	//p[i].w = 1.0f;
 }

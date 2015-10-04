@@ -294,7 +294,7 @@ void InitCL()
 	mycontext = clCreateContext(props,1,&mydevice[0],NULL,NULL,&err);
 	mycommandqueue = clCreateCommandQueue(mycontext,mydevice[0],0,&err);
 
-	oclsource = RGULoadProgSource("mp5vv.cl", "", &program_length);
+	oclsource = RGULoadProgSource("particles.cl", "", &program_length);
 	myprogram = clCreateProgramWithSource(mycontext,1,(const char **)&oclsource,
 			&program_length, &err);
 	if(err==CL_SUCCESS) fprintf(stderr,"create ok\n");
