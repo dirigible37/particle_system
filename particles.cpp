@@ -77,7 +77,7 @@ void do_material_points()
 void render_ball()
 {
 	glPushMatrix();
-        glColor3f (0, 0.2, 1);
+ 	glTranslatef(0,center[1],0);
         glutWireSphere(0.5, 10, 10);
         glPopMatrix();
 }
@@ -363,7 +363,7 @@ int main(int argc,char **argv)
 	InitGL(argc, argv); 
 	InitCL(); 
 	glutDisplayFunc(mydisplayfunc);
-	glutIdleFunc(movesphere);
+	//glutIdleFunc(movesphere);
 	glutKeyboardFunc(getout);
 	glutMainLoop();
 }
