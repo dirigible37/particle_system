@@ -5,8 +5,8 @@
 #define FRICTION 0.4f
 #define RESTITUTION 2.0f
 
-#define GRAVITY_CONSTANT 1.0f // scale of gravitational pull to sphere
-#define SPHERE_RADIUS 0.5f
+#define GRAVITY_CONSTANT 0.5f // scale of gravitational pull to sphere
+#define SPHERE_RADIUS 0.25f
 
 #define EPS_DOWN (-0.25f) // gravity
 #define V_DRAG (2.0f)
@@ -27,6 +27,21 @@ float4 getforce(float4 tocenter, float4 vel)
     force.y += EPS_DOWN;
     
 	return(force);
+}
+
+//
+// Make a particle bounce off a plane, given the plane's normal and distance from origin
+// Distance from origin may be negative, meaning the normal points towards the origin
+//
+void planecollision(__global float4 *p, __global float4 *v, float4 normal, float dist) {
+    float p_component = dot(*p, normal);
+    if (p_component < dist) {
+        // Force particle to surface
+        *p -= (p_component - dist) * normal;
+        // Bounce it out with friction
+        float4 zoom = dot(*v, normal) * normal;
+        *v -= (1.0f+RESTITUTION)*zoom + FRICTION*normalize(*v-zoom);
+    }
 }
 
 #define MULT (87.0f)
@@ -66,6 +81,14 @@ __kernel void VVerlet(__global float4* p, __global float4* v, __global float* r,
                 v[i] -= (1.0f+RESTITUTION)*zoom + FRICTION*normalize(v[i]-zoom);
             }
         }
+
+        // Collide with walls
+        planecollision(&p[i], &v[i], (float4)(1.0f,0.0f,0.0f,0.0f), -1.0f);
+        planecollision(&p[i], &v[i], (float4)(-1.0f,0.0f,0.0f,0.0f), -1.0f);
+        planecollision(&p[i], &v[i], (float4)(0.0f,1.0f,0.0f,0.0f), -1.0f);
+        planecollision(&p[i], &v[i], (float4)(0.0f,-1.0f,0.0f,0.0f), -1.0f);
+        planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,1.0f,0.0f), -1.0f);
+        planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,-1.0f,0.0f), -1.0f);
         
         /*
 		radius = sqrt(p[i].x*p[i].x + p[i].z*p[i].z);
