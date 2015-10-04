@@ -120,9 +120,10 @@ void mydisplayfunc()
 	//glEnable(GL_DEPTH_TEST);	// comment out to rid of the border lines in room
 
 	glDisable(GL_BLEND);
-	//glEnable(GL_LIGHTING);
-	//do_material_points();
-	glBindBuffer(GL_ARRAY_BUFFER,OGL_VBO);
+	glEnable(GL_LIGHTING);
+	do_material_points();
+	glEnable(GL_COLOR_MATERIAL);
+    glBindBuffer(GL_ARRAY_BUFFER,OGL_VBO);
 	glVertexPointer(4,GL_FLOAT,0,0);
 	glEnableClientState(GL_VERTEX_ARRAY);
     glBindBuffer(GL_ARRAY_BUFFER,OGL_CBO);
@@ -131,8 +132,8 @@ void mydisplayfunc()
 	glDrawArrays(GL_POINTS, 0, NUMBER_OF_PARTICLES);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
-
-    glEnable(GL_LIGHTING);
+    glDisable(GL_COLOR_MATERIAL);
+    
 	glutSwapBuffers();
 	glutPostRedisplay();
 }
