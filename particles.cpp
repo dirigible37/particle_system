@@ -77,7 +77,7 @@ void do_material_points()
 void render_ball()
 {
 	glPushMatrix();
- 	glTranslatef(0,center[1],0);
+ 	glTranslatef(center[0],center[1],center[2]);
         glutWireSphere(0.5, 10, 10);
         glPopMatrix();
 }
