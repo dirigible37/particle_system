@@ -78,15 +78,17 @@ void render_ball()
 {
 	glPushMatrix();
  	glTranslatef(center[0],center[1],center[2]);
-        glutWireSphere(0.5, 10, 10);
+        glutSolidSphere(0.25, 50, 50);
         glPopMatrix();
 }
 
 void mydisplayfunc()
 {
 	void *ptr;
-    angle += 0.01f;
-    center[1] = sinf(angle);
+    	angle += 0.01f;
+	center[0] = cosf(angle);
+    	center[1] = sinf(angle)*0.5;
+	center[2] = sinf(angle);	
 	clSetKernelArg(mykernel,3,sizeof(float)*4,center);
 	glFinish();
 	clEnqueueAcquireGLObjects(mycommandqueue,1,&oclvbo,0,0,0);
