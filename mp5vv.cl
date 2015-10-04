@@ -2,15 +2,17 @@
 #define STEPS_PER_RENDER 20
 #define MASS 1.0f
 #define DELTA_T (0.003f)
-#define FRICTION 0.4f
-#define RESTITUTION 2.0f
 
 #define GRAVITY_CONSTANT 0.5f // scale of gravitational pull to sphere
 #define SPHERE_RADIUS 0.25f
+#define SPHERE_FRICTION 0.4f
+#define SPHERE_RESTITUTION 2.0f
 
 #define WALL_DIST 1.25f
 #define CEIL_DIST 1.0f
 #define FLOOR_DIST 0.0f
+#define PLANE_FRICTION 0.8f
+#define PLANE_RESTITUTION 1.0f
 
 #define EPS_DOWN (-0.25f) // gravity
 #define V_DRAG (2.0f)
@@ -44,7 +46,7 @@ static inline void planecollision(__global float4 *p, __global float4 *v, float4
         *p -= (p_component - dist) * normal;
         // Bounce it out with friction
         float4 zoom = dot(*v, normal) * normal;
-        *v -= (1.0f+RESTITUTION)*zoom + FRICTION*normalize(*v-zoom);
+        *v -= (1.0f+PLANE_RESTITUTION)*zoom + PLANE_FRICTION*normalize(*v-zoom);
     }
 }
 
@@ -79,10 +81,11 @@ __kernel void VVerlet(__global float4* p, __global float4* v, __global float* r,
             p[i] = center + normal*SPHERE_RADIUS;
             // Get the component of the velocity in the direction of the normal
             dist = dot(v[i], normal);
+            // Since the sphere is moving, make sure the particle is actually moving into it
             if (dist < 0) {
                 zoom = dist * normal;
                 // Bounce it out with friction
-                v[i] -= (1.0f+RESTITUTION)*zoom + FRICTION*normalize(v[i]-zoom);
+                v[i] -= (1.0f+SPHERE_RESTITUTION)*zoom + SPHERE_FRICTION*normalize(v[i]-zoom);
             }
         }
 
