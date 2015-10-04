@@ -2,15 +2,17 @@
 #define STEPS_PER_RENDER 20
 #define MASS 1.0f
 #define DELTA_T (0.003f)
-#define FRICTION 0.4f
-#define RESTITUTION 2.0f
 
-#define GRAVITY_CONSTANT 0.5f // scale of gravitational pull to sphere
+#define GRAVITY_CONSTANT 0.3f // scale of gravitational pull to sphere
 #define SPHERE_RADIUS 0.25f
+#define SPHERE_FRICTION 0.4f
+#define SPHERE_RESTITUTION 2.0f
 
 #define WALL_DIST 1.25f
 #define CEIL_DIST 1.0f
 #define FLOOR_DIST 0.0f
+#define PLANE_FRICTION 0.6f
+#define PLANE_RESTITUTION 2.0f
 
 #define EPS_DOWN (-0.25f) // gravity
 #define V_DRAG (2.0f)
@@ -37,14 +39,14 @@ float4 getforce(float4 tocenter, float4 vel)
 // Make a particle bounce off a plane, given the plane's normal and distance from origin
 // Distance from origin may be negative, meaning the normal points towards the origin
 //
-static inline void planecollision(__global float4 *p, __global float4 *v, float4 normal, float dist) {
+void planecollision(__global float4 *p, __global float4 *v, float4 normal, float dist) {
     float p_component = dot(*p, normal);
     if (p_component < dist) {
         // Force particle to surface
         *p -= (p_component - dist) * normal;
         // Bounce it out with friction
         float4 zoom = dot(*v, normal) * normal;
-        *v -= (1.0f+RESTITUTION)*zoom + FRICTION*normalize(*v-zoom);
+        *v -= (1.0f+PLANE_RESTITUTION)*zoom + PLANE_FRICTION*normalize(*v-zoom);
     }
 }
 
@@ -57,7 +59,7 @@ float goober(float prev)
 	return(fmod(prev,MOD)/MOD);
 }
 
-__kernel void VVerlet(__global float4* p, __global float4* v, __global float* r, float4 center)
+__kernel void VVerlet(__global float4* p, __global float4* c, __global float4* v, __global float* r, float4 center)
 {
 	unsigned int i = get_global_id(0);
 	float4 force, normal, zoom;
@@ -73,16 +75,18 @@ __kernel void VVerlet(__global float4* p, __global float4* v, __global float* r,
         // Check for collision with sphere
         normal = p[i] - center;
         dist = length(normal);
+
         if (dist < SPHERE_RADIUS) {
             // Normalize normal and move point to outside of sphere
             normal /= dist;
             p[i] = center + normal*SPHERE_RADIUS;
             // Get the component of the velocity in the direction of the normal
             dist = dot(v[i], normal);
+            // Since the sphere is moving, make sure the particle is actually moving into it
             if (dist < 0) {
                 zoom = dist * normal;
                 // Bounce it out with friction
-                v[i] -= (1.0f+RESTITUTION)*zoom + FRICTION*normalize(v[i]-zoom);
+                v[i] -= (1.0f+SPHERE_RESTITUTION)*zoom + SPHERE_FRICTION*normalize(v[i]-zoom);
             }
         }
 
@@ -93,41 +97,11 @@ __kernel void VVerlet(__global float4* p, __global float4* v, __global float* r,
         planecollision(&p[i], &v[i], (float4)(0.0f,-1.0f,0.0f,0.0f), -CEIL_DIST);
         planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,1.0f,0.0f), -WALL_DIST);
         planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,-1.0f,0.0f), -WALL_DIST);
-        
-        /*
-		radius = sqrt(p[i].x*p[i].x + p[i].z*p[i].z);
-		if((radius< 0.05f)||(p[i].y<0.0f)){
-			// regenerate position and velocity
-			zoom.x = r[i]+0.2f;
-			r[i] = goober(r[i]);
-			zoom.y = 0.2f*r[i]+0.8f;
-			r[i] = goober(r[i]);
-			zoom.z = 2.0f*(r[i]-0.5f);
-			p[i] = zoom;
-			v[i] = (float4)(0.0f,0.0f,0.0f,1.0f);
-			r[i] = goober(r[i]);
-		}
-		else{
-			// Check for wall collision.  Usually it's (p - q) o n < 0, 
-			// where p is the point in question and q is a point in
-			// the plane with normal n; but here q = (-.5,0,0) 
-			// and n = (1,0,0), so it's simply p.x < -.5.
-			if(p[i].x<-0.5){
-				// Bounce the point.  Usually it's 
-				// vout = vin - (1+r)(vin o n)n
-				//      - f*(vin - (vin o n)n)/||vin - (vin o n)n||
-				// but here (vin o n)n) = (v[i].x,0,0), and so
-				// vin - (vin o n)n = (0,v[i].y,v[i].z).
-				p[i].x = -0.49;
-				v[i].x = v[i].x - ((1.0 + RESTITUTION)*v[i].x);
-				mylength = sqrt(v[i].y*v[i].y + v[i].z*v[i].z);
-				if(mylength>0.0f){
-					v[i].y -= FRICTION*v[i].y/mylength;
-					v[i].z -= FRICTION*v[i].z/mylength;
-				}
-			}
-		}
-        */
 	}
-	//p[i].w = 1.0f;
+
+    // Also set color or something
+    //c[i] = (float4)(r[i]=goober(r[i]),r[i]=goober(r[i]),r[i]=goober(r[i]),0.0f);
+    c[i].x = floor(p[i].x/1.25)+1;
+    c[i].y = floor(p[i].y*2);
+    c[i].z = floor(p[i].z/1.25)+1;
 }
