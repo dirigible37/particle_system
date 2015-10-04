@@ -100,8 +100,7 @@ __kernel void VVerlet(__global float4* p, __global float4* c, __global float4* v
 	}
 
     // Also set color or something
-    //c[i] = (float4)(r[i]=goober(r[i]),r[i]=goober(r[i]),r[i]=goober(r[i]),0.0f);
-    c[i].x = floor(p[i].x/1.25)+1;
-    c[i].y = floor(p[i].y*2);
-    c[i].z = floor(p[i].z/1.25)+1;
+    c[i].x = floor(((p[i].x+1.25)/2.5)*3)/2;
+    c[i].y = floor(p[i].y*3)/2;
+    c[i].z = floor(((p[i].z+1.25)/2.5)*3)/2;
 }
