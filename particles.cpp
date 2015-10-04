@@ -87,7 +87,7 @@ void mydisplayfunc()
 	void *ptr;
     	angle += 0.01f;
 	center[0] = cosf(angle);
-    	center[1] = sinf(angle)*0.5;
+    center[1] = 0.5f;
 	center[2] = sinf(angle);	
 	clSetKernelArg(mykernel,3,sizeof(float)*4,center);
 	glFinish();
@@ -248,7 +248,7 @@ void init_particles()
 	int i, j;
 	for(i=0;i<NUMBER_OF_PARTICLES;i++){
 		host_position[i][0] = 2.0*(genrand()-0.5);//genrand();
-		host_position[i][1] = 2.0*(genrand()-0.5);//0.2*genrand()+0.8;
+		host_position[i][1] = (genrand());//0.2*genrand()+0.8;
 		host_position[i][2] = 2.0*(genrand()-0.5);
 		host_position[i][3] = 1.0;
 		for(j=0;j<4;j++) host_velocity[i][j] = 0.0;

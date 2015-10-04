@@ -1,12 +1,16 @@
 
-#define STEPS_PER_RENDER 30
+#define STEPS_PER_RENDER 20
 #define MASS 1.0f
-#define DELTA_T (0.002f)
+#define DELTA_T (0.003f)
 #define FRICTION 0.4f
 #define RESTITUTION 2.0f
 
 #define GRAVITY_CONSTANT 0.5f // scale of gravitational pull to sphere
 #define SPHERE_RADIUS 0.25f
+
+#define WALL_DIST 1.25f
+#define CEIL_DIST 1.0f
+#define FLOOR_DIST 0.0f
 
 #define EPS_DOWN (-0.25f) // gravity
 #define V_DRAG (2.0f)
@@ -33,7 +37,7 @@ float4 getforce(float4 tocenter, float4 vel)
 // Make a particle bounce off a plane, given the plane's normal and distance from origin
 // Distance from origin may be negative, meaning the normal points towards the origin
 //
-void planecollision(__global float4 *p, __global float4 *v, float4 normal, float dist) {
+static inline void planecollision(__global float4 *p, __global float4 *v, float4 normal, float dist) {
     float p_component = dot(*p, normal);
     if (p_component < dist) {
         // Force particle to surface
@@ -83,12 +87,12 @@ __kernel void VVerlet(__global float4* p, __global float4* v, __global float* r,
         }
 
         // Collide with walls
-        planecollision(&p[i], &v[i], (float4)(1.0f,0.0f,0.0f,0.0f), -1.0f);
-        planecollision(&p[i], &v[i], (float4)(-1.0f,0.0f,0.0f,0.0f), -1.0f);
-        planecollision(&p[i], &v[i], (float4)(0.0f,1.0f,0.0f,0.0f), -1.0f);
-        planecollision(&p[i], &v[i], (float4)(0.0f,-1.0f,0.0f,0.0f), -1.0f);
-        planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,1.0f,0.0f), -1.0f);
-        planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,-1.0f,0.0f), -1.0f);
+        planecollision(&p[i], &v[i], (float4)(1.0f,0.0f,0.0f,0.0f), -WALL_DIST);
+        planecollision(&p[i], &v[i], (float4)(-1.0f,0.0f,0.0f,0.0f), -WALL_DIST);
+        planecollision(&p[i], &v[i], (float4)(0.0f,1.0f,0.0f,0.0f), -FLOOR_DIST);
+        planecollision(&p[i], &v[i], (float4)(0.0f,-1.0f,0.0f,0.0f), -CEIL_DIST);
+        planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,1.0f,0.0f), -WALL_DIST);
+        planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,-1.0f,0.0f), -WALL_DIST);
         
         /*
 		radius = sqrt(p[i].x*p[i].x + p[i].z*p[i].z);
