@@ -16,10 +16,12 @@
 #include <CL/opencl.h>
 #include "RGU.h"
 
-#define YAXIS 1
-#define BOX 2
-#define WALL 3
-#define BORDER 4
+#define FLOOR 1
+#define LWALL 2
+#define RWALL 3
+#define FBORDER 4
+#define LBORDER 5
+#define RBORDER 6
 
 GLuint OGL_VBO = 1;
 #define NUMBER_OF_PARTICLES 512*512
@@ -87,7 +89,7 @@ void mydisplayfunc()
 	void *ptr;
     	angle += 0.01f;
 	center[0] = cosf(angle);
-    center[1] = 0.5f;
+    	center[1] = 0.5f;
 	center[2] = sinf(angle);	
 	clSetKernelArg(mykernel,3,sizeof(float)*4,center);
 	glFinish();
@@ -99,24 +101,19 @@ void mydisplayfunc()
 	glEnable(GL_DEPTH_TEST);
 	do_material();
 	render_ball();
-	glCallList(WALL);
-
+	glCallList(LWALL);
+	glCallList(RWALL);
+	glCallList(FLOOR);
 	// Frame is drawn to blend with background.
 	glEnable(GL_BLEND);
 	glDisable(GL_LIGHTING);
-	glCallList(YAXIS);
-	glCallList(BOX);
-	glPushMatrix();
-	glTranslatef(-1.0,0.0,0.0);
-	glCallList(BOX);
-	glTranslatef(0.0,0.0,-1.0);
-	glCallList(BOX);
-	glTranslatef(1.0,0.0,0.0);
-	glCallList(BOX);
-	glPopMatrix();
-	glDisable(GL_DEPTH_TEST);
-	glCallList(BORDER);
-	glEnable(GL_DEPTH_TEST);
+	//glCallList(FLOOR);
+
+	//glDisable(GL_DEPTH_TEST);	// comment out to rid of the border lines in room
+	glCallList(FBORDER);
+	glCallList(LBORDER);
+	glCallList(RBORDER);
+	//glEnable(GL_DEPTH_TEST);	// comment out to rid of the border lines in room
 
 	glDisable(GL_BLEND);
 	glEnable(GL_LIGHTING);
@@ -174,46 +171,66 @@ void do_lights()
 
 void build_call_lists()
 {
-
-	glNewList(YAXIS,GL_COMPILE);
-	glBegin(GL_LINES);
-	glColor4f(1.0,1.0,1.0,0.9);
-	glVertex3f(0.0,0.0,0.0);
-	glVertex3f(0.0,1.0,0.0);
+	glNewList(FLOOR,GL_COMPILE);
+	glBegin(GL_QUADS);
+	glNormal3f(0.0,1.0,0.0);
+	glVertex3f(1.25,0.0,1.25);
+	glVertex3f(-1.25,0.0,1.25);
+	glVertex3f(-1.25,0.0,-1.25);
+	glVertex3f(1.25,0.0,-1.25);
 	glEnd();
 	glEndList();
-	glNewList(BOX,GL_COMPILE);
-	glBegin(GL_LINES);
-	glColor4f(1.0,1.0,1.0,0.9);
-	glVertex3f(0.0,0.0,0.0);
-	glVertex3f(1.0,0.0,0.0);
-	glVertex3f(0.0,0.0,0.0);
-	glVertex3f(0.0,0.0,1.0);
-	// Complete box in y=0 plane. 
-	glVertex3f(0.0,0.0,1.0);
-	glVertex3f(1.0,0.0,1.0);
-	glVertex3f(1.0,0.0,0.0);
-	glVertex3f(1.0,0.0,1.0);
-	glEnd();
-	glEndList();
-	glNewList(WALL,GL_COMPILE);
+	glNewList(LWALL,GL_COMPILE);
 	glBegin(GL_QUADS);
 	glNormal3f(1.0,0.0,0.0);
-	glVertex3f(-0.5,0.0,1.0);
-	glVertex3f(-0.5,1.0,1.0);
-	glVertex3f(-0.5,1.0,-1.0);
-	glVertex3f(-0.5,0.0,-1.0);
+	glVertex3f(-1.25,0.0,1.25);
+	glVertex3f(-1.25,1.0,1.25);
+	glVertex3f(-1.25,1.0,-1.25);
+	glVertex3f(-1.25,0.0,-1.25);
 	glEnd();
 	glEndList();
-	glNewList(BORDER,GL_COMPILE);
+	glNewList(RWALL,GL_COMPILE);
+	glBegin(GL_QUADS);
+	glNormal3f(0.0,0.0,1.0);
+	glVertex3f(1.25,0.0,-1.25);
+	glVertex3f(1.25,1.0,-1.25);
+	glVertex3f(-1.25,1.0,-1.25);
+	glVertex3f(-1.25,0.0,-1.25);
+	glEnd();
+	glEndList();
+	glNewList(FBORDER,GL_COMPILE);
 	glBegin(GL_LINES);
 	glColor4f(1.0,1.0,1.0,0.8);
-	glVertex3f(-0.5,0.0,-1.0);
-	glVertex3f(-0.5,1.0,-1.0);
-	glVertex3f(-0.5,1.0,-1.0);
-	glVertex3f(-0.5,1.0,1.0);
-	glVertex3f(-0.5,1.0,1.0);
-	glVertex3f(-0.5,0.0,1.0);
+	glVertex3f(1.25,0.0,-1.25);
+	glVertex3f(-1.25,0.0,-1.25);
+	glVertex3f(-1.25,0.0,-1.25);
+	glVertex3f(-1.25,0.0,1.25);
+	glVertex3f(-1.25,0.0,1.25);
+	glVertex3f(1.25,0.0,1.25);
+	glVertex3f(1.25,0.0,1.25);
+	glVertex3f(1.25,0.0,-1.25);
+	glEnd();
+	glEndList();
+	glNewList(LBORDER,GL_COMPILE);
+	glBegin(GL_LINES);
+	glColor4f(1.0,1.0,1.0,0.8);
+	glVertex3f(-1.25,0.0,-1.25);
+	glVertex3f(-1.25,1.0,-1.25);
+	glVertex3f(-1.25,1.0,-1.25);
+	glVertex3f(-1.25,1.0,1.25);
+	glVertex3f(-1.25,1.0,1.25);
+	glVertex3f(-1.25,0.0,1.25);
+	glEnd();
+	glEndList();
+	glNewList(RBORDER,GL_COMPILE);
+	glBegin(GL_LINES);
+	glColor4f(1.0,1.0,1.0,0.8);
+	glVertex3f(1.25,0.0,-1.25);
+	glVertex3f(1.25,1.0,-1.25);
+	glVertex3f(1.25,1.0,-1.25);
+	glVertex3f(-1.25,1.0,-1.25);
+	glVertex3f(-1.25,1.0,-1.25);
+	glVertex3f(-1.25,0.0,-1.25);
 	glEnd();
 	glEndList();
 }
