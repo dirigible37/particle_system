@@ -311,7 +311,7 @@ void InitCL()
 
 	glBindBuffer(GL_ARRAY_BUFFER, OGL_VBO);
 	glBufferData(GL_ARRAY_BUFFER, DATA_SIZE, &host_position[0][0], GL_DYNAMIC_DRAW);
-	oclvbo = clCreateFromGLBuffer(mycontext,CL_MEM_WRITE_ONLY,OGL_VBO,&err);
+	oclvbo = clCreateFromGLBuffer(mycontext,CL_MEM_READ_WRITE,OGL_VBO,&err);
 
     glBindBuffer(GL_ARRAY_BUFFER, OGL_CBO);
     glBufferData(GL_ARRAY_BUFFER, DATA_SIZE, &host_color[0][0], GL_DYNAMIC_DRAW);

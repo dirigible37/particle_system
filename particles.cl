@@ -3,7 +3,7 @@
 #define MASS 1.0f
 #define DELTA_T (0.003f)
 
-#define GRAVITY_CONSTANT 0.5f // scale of gravitational pull to sphere
+#define GRAVITY_CONSTANT 0.3f // scale of gravitational pull to sphere
 #define SPHERE_RADIUS 0.25f
 #define SPHERE_FRICTION 0.4f
 #define SPHERE_RESTITUTION 2.0f
@@ -11,8 +11,8 @@
 #define WALL_DIST 1.25f
 #define CEIL_DIST 1.0f
 #define FLOOR_DIST 0.0f
-#define PLANE_FRICTION 0.8f
-#define PLANE_RESTITUTION 1.0f
+#define PLANE_FRICTION 0.6f
+#define PLANE_RESTITUTION 2.0f
 
 #define EPS_DOWN (-0.25f) // gravity
 #define V_DRAG (2.0f)
@@ -76,9 +76,6 @@ __kernel void VVerlet(__global float4* p, __global float4* c, __global float4* v
         normal = p[i] - center;
         dist = length(normal);
 
-        // Also set color or something
-        c[i] = normal/4 + (float4)(0.5f,0.5f,0.5f,0.0f);
-
         if (dist < SPHERE_RADIUS) {
             // Normalize normal and move point to outside of sphere
             normal /= dist;
@@ -101,4 +98,10 @@ __kernel void VVerlet(__global float4* p, __global float4* c, __global float4* v
         planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,1.0f,0.0f), -WALL_DIST);
         planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,-1.0f,0.0f), -WALL_DIST);
 	}
+
+    // Also set color or something
+    //c[i] = (float4)(r[i]=goober(r[i]),r[i]=goober(r[i]),r[i]=goober(r[i]),0.0f);
+    c[i].x = floor(p[i].x/1.25)+1;
+    c[i].y = floor(p[i].y*2);
+    c[i].z = floor(p[i].z/1.25)+1;
 }
