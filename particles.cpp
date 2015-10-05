@@ -1,6 +1,3 @@
-
-// This particle sytem with collisions uses velocity Verlet integration.
-
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -46,7 +43,6 @@ float angle = 0.0f;
 void do_kernel()
 {
 	cl_event waitlist[1];
-
 	clEnqueueNDRangeKernel(mycommandqueue,mykernel,1,NULL,worksize,lws,0,0,
 			&waitlist[0]);
 	clWaitForEvents(1,waitlist);
@@ -78,20 +74,45 @@ void do_material_points()
 	glMaterialfv(GL_FRONT,GL_SHININESS,mat_shininess);
 }
 
+void do_lights()
+{
+	float light_ambient[] = { 0.0, 0.0, 0.0, 0.0 };
+	float light_diffuse[] = { 0.8, 0.8, 0.8, 0.0 };
+	float light_specular[] = { 1.0, 1.0, 1.0, 0.0 };
+	float light_position[] = { 2.0, 2.0, 2.0, 1.0 };
+	float light_direction[] = { -1.0, -1.0, -1.0, 1.0};
+
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light_ambient);
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,1);
+	glLightfv(GL_LIGHT0,GL_AMBIENT,light_ambient);
+	glLightfv(GL_LIGHT0,GL_DIFFUSE,light_diffuse);
+	glLightfv(GL_LIGHT0,GL_SPECULAR,light_specular);
+	glLightf(GL_LIGHT0,GL_SPOT_EXPONENT,1.0);
+	glLightf(GL_LIGHT0,GL_SPOT_CUTOFF,180.0);
+	glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,0.5);
+	glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.1);
+	glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.01);
+	glLightfv(GL_LIGHT0,GL_POSITION,light_position);
+	glLightfv(GL_LIGHT0,GL_SPOT_DIRECTION,light_direction);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+}
+
 void render_ball()
 {
 	glPushMatrix();
- 	glTranslatef(center[0],center[1],center[2]);
-        glutSolidSphere(0.25, 50, 50);
-        glPopMatrix();
+	glTranslatef(center[0],center[1],center[2]);
+	glutSolidSphere(0.25, 50, 50);
+	glPopMatrix();
 }
 
 void mydisplayfunc()
 {
 	void *ptr;
-    	angle += 0.01f;
+	angle += 0.01f;
 	center[0] = cosf(angle);
-    	center[1] = 0.5f;
+	center[1] = 0.5f;
 	center[2] = sinf(angle);	
 	clSetKernelArg(mykernel,4,sizeof(float)*4,center);
 	glFinish();
@@ -108,32 +129,28 @@ void mydisplayfunc()
 	glCallList(LWALL);
 	glCallList(RWALL);
 	glCallList(FLOOR);
-	// Frame is drawn to blend with background.
 	glEnable(GL_BLEND);
 	glDisable(GL_LIGHTING);
-	//glCallList(FLOOR);
 
-	//glDisable(GL_DEPTH_TEST);	// comment out to rid of the border lines in room
 	glCallList(FBORDER);
 	glCallList(LBORDER);
 	glCallList(RBORDER);
-	//glEnable(GL_DEPTH_TEST);	// comment out to rid of the border lines in room
 
 	glDisable(GL_BLEND);
 	glEnable(GL_LIGHTING);
 	do_material_points();
 	glEnable(GL_COLOR_MATERIAL);
-    glBindBuffer(GL_ARRAY_BUFFER,OGL_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER,OGL_VBO);
 	glVertexPointer(4,GL_FLOAT,0,0);
 	glEnableClientState(GL_VERTEX_ARRAY);
-    glBindBuffer(GL_ARRAY_BUFFER,OGL_CBO);
-    glColorPointer(4,GL_FLOAT,0,0);
-    glEnableClientState(GL_COLOR_ARRAY);
+	glBindBuffer(GL_ARRAY_BUFFER,OGL_CBO);
+	glColorPointer(4,GL_FLOAT,0,0);
+	glEnableClientState(GL_COLOR_ARRAY);
 	glDrawArrays(GL_POINTS, 0, NUMBER_OF_PARTICLES);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
-    glDisable(GL_COLOR_MATERIAL);
-    
+	glDisable(GL_COLOR_MATERIAL);
+
 	glutSwapBuffers();
 	glutPostRedisplay();
 }
@@ -147,36 +164,9 @@ void setup_the_viewvol()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45.0,1.0,0.1,20.0);
-
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(eye[0],eye[1],eye[2],view[0],view[1],view[2],up[0],up[1],up[2]);
-}
-
-void do_lights()
-{
-	float light_ambient[] = { 0.0, 0.0, 0.0, 0.0 };
-	float light_diffuse[] = { 0.8, 0.8, 0.8, 0.0 };
-	float light_specular[] = { 1.0, 1.0, 1.0, 0.0 };
-	float light_position[] = { 2.0, 2.0, 2.0, 1.0 };
-	float light_direction[] = { -1.0, -1.0, -1.0, 1.0};
-
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light_ambient);
-	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,1);
-
-	glLightfv(GL_LIGHT0,GL_AMBIENT,light_ambient);
-	glLightfv(GL_LIGHT0,GL_DIFFUSE,light_diffuse);
-	glLightfv(GL_LIGHT0,GL_SPECULAR,light_specular);
-	glLightf(GL_LIGHT0,GL_SPOT_EXPONENT,1.0);
-	glLightf(GL_LIGHT0,GL_SPOT_CUTOFF,180.0);
-	glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,0.5);
-	glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.1);
-	glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.01);
-	glLightfv(GL_LIGHT0,GL_POSITION,light_position);
-	glLightfv(GL_LIGHT0,GL_SPOT_DIRECTION,light_direction);
-
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
 }
 
 void build_call_lists()
@@ -274,14 +264,14 @@ void init_particles()
 {
 	int i, j;
 	for(i=0;i<NUMBER_OF_PARTICLES;i++){
-		host_position[i][0] = 2.0*(genrand()-0.5);//genrand();
-		host_position[i][1] = (genrand());//0.2*genrand()+0.8;
+		host_position[i][0] = 2.0*(genrand()-0.5);
+		host_position[i][1] = (genrand());
 		host_position[i][2] = 2.0*(genrand()-0.5);
 		host_position[i][3] = 1.0;
-        host_color[i][0] = 1.0;
-        host_color[i][1] = 1.0;
-        host_color[i][2] = 0.1;
-        host_color[i][3] = 0.0;
+		host_color[i][0] = 1.0;
+		host_color[i][1] = 1.0;
+		host_color[i][2] = 0.1;
+		host_color[i][3] = 0.0;
 		for(j=0;j<4;j++) host_velocity[i][j] = 0.0;
 		host_rseed[i] = genrand();
 	}
@@ -302,7 +292,6 @@ void InitCL()
 	mydevice = new cl_device_id[gpudevcount];
 	err = clGetDeviceIDs(myplatform,CL_DEVICE_TYPE_GPU,gpudevcount,mydevice,NULL);
 
-	// You need all these to get full interoperability with OpenGL:
 	cl_context_properties props[] = {
 		CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
 		CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
@@ -321,19 +310,19 @@ void InitCL()
 	mykernel = clCreateKernel(myprogram, "VVerlet", &err);
 	if(err==CL_SUCCESS) fprintf(stderr,"build ok\n");
 	else {
-        fprintf(stderr,"build err %d\n",err);
-        char log[512];
-        clGetProgramBuildInfo(myprogram,mydevice[0],CL_PROGRAM_BUILD_LOG,sizeof(log),log,NULL);
-	    printf("%s", log);
-    }
+		fprintf(stderr,"build err %d\n",err);
+		char log[512];
+		clGetProgramBuildInfo(myprogram,mydevice[0],CL_PROGRAM_BUILD_LOG,sizeof(log),log,NULL);
+		printf("%s", log);
+	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, OGL_VBO);
 	glBufferData(GL_ARRAY_BUFFER, DATA_SIZE, &host_position[0][0], GL_DYNAMIC_DRAW);
 	oclvbo = clCreateFromGLBuffer(mycontext,CL_MEM_READ_WRITE,OGL_VBO,&err);
 
-    glBindBuffer(GL_ARRAY_BUFFER, OGL_CBO);
-    glBufferData(GL_ARRAY_BUFFER, DATA_SIZE, &host_color[0][0], GL_DYNAMIC_DRAW);
-    oclcbo = clCreateFromGLBuffer(mycontext,CL_MEM_WRITE_ONLY,OGL_CBO,&err);
+	glBindBuffer(GL_ARRAY_BUFFER, OGL_CBO);
+	glBufferData(GL_ARRAY_BUFFER, DATA_SIZE, &host_color[0][0], GL_DYNAMIC_DRAW);
+	oclcbo = clCreateFromGLBuffer(mycontext,CL_MEM_WRITE_ONLY,OGL_CBO,&err);
 
 	dev_velocity = clCreateBuffer(mycontext,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
 			DATA_SIZE,&host_velocity[0][0],&err); 
@@ -342,7 +331,7 @@ void InitCL()
 			NUMBER_OF_PARTICLES*sizeof(float),&host_rseed[0],&err); 
 
 	clSetKernelArg(mykernel,0,sizeof(cl_mem),&oclvbo);
-    clSetKernelArg(mykernel,1,sizeof(cl_mem),&oclcbo);
+	clSetKernelArg(mykernel,1,sizeof(cl_mem),&oclcbo);
 	clSetKernelArg(mykernel,2,sizeof(cl_mem),&dev_velocity);
 	clSetKernelArg(mykernel,3,sizeof(cl_mem),&dev_rseed);
 }
@@ -354,7 +343,7 @@ void cleanup()
 	clReleaseCommandQueue(mycommandqueue);
 	glBindBuffer(GL_ARRAY_BUFFER,OGL_VBO);
 	glDeleteBuffers(1,&OGL_VBO);
-    glDeleteBuffers(1,&OGL_CBO);
+	glDeleteBuffers(1,&OGL_CBO);
 	clReleaseMemObject(oclvbo);
 	clReleaseMemObject(dev_velocity);
 	clReleaseMemObject(dev_rseed);
