@@ -48,7 +48,7 @@ void do_kernel()
 	clWaitForEvents(1,waitlist);
 }
 
-void do_material()
+void do_wall_material()
 {
 	float mat_ambient[] = {0.0,0.0,0.0,1.0};
 	float mat_diffuse[] = {0.0,0.4,0.2,1.0};
@@ -74,9 +74,22 @@ void do_material_points()
 	glMaterialfv(GL_FRONT,GL_SHININESS,mat_shininess);
 }
 
+void do_sphere_material()
+{
+	float mat_ambient[] = {0.0,0.0,0.0,1.0};
+	float mat_diffuse[] = {0.75,0.75,0.75,1.0};
+	float mat_specular[] = {0.25,0.25,0.25,1.0};
+	float mat_shininess[] = {2.0};
+
+	glMaterialfv(GL_FRONT,GL_AMBIENT,mat_ambient);
+	glMaterialfv(GL_FRONT,GL_DIFFUSE,mat_diffuse);
+	glMaterialfv(GL_FRONT,GL_SPECULAR,mat_specular);
+	glMaterialfv(GL_FRONT,GL_SHININESS,mat_shininess);
+}
+
 void do_lights()
 {
-	float light_ambient[] = { 0.0, 0.0, 0.0, 0.0 };
+	float light_ambient[] = { 0.5, 0.5, 0.5, 0.0 };
 	float light_diffuse[] = { 0.8, 0.8, 0.8, 0.0 };
 	float light_specular[] = { 1.0, 1.0, 1.0, 0.0 };
 	float light_position[] = { 2.0, 2.0, 2.0, 1.0 };
@@ -99,7 +112,7 @@ void do_lights()
 	glEnable(GL_LIGHT0);
 }
 
-void render_ball()
+void render_sphere()
 {
 	glPushMatrix();
 	glTranslatef(center[0],center[1],center[2]);
@@ -132,8 +145,9 @@ void mydisplayfunc()
 	clFinish(mycommandqueue);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
-	do_material();
-	render_ball();
+	do_sphere_material();
+	render_sphere();
+	do_wall_material();
 	draw_string();
 	glCallList(LWALL);
 	glCallList(RWALL);
@@ -246,7 +260,7 @@ void InitGL(int argc, char** argv)
 	glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH|GLUT_DOUBLE);
 	glutInitWindowSize(768,768);
 	glutInitWindowPosition(100,50);
-	glutCreateWindow("my_cool_cube");
+	glutCreateWindow("Particle Party");
 	setup_the_viewvol();
 	do_lights();
 	glPointSize(1.0);
