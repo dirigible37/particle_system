@@ -107,6 +107,14 @@ void render_ball()
 	glPopMatrix();
 }
 
+void draw_string()
+{
+	glBegin(GL_LINES);
+        glVertex3f(0.0, 2.0, 0.0);
+        glVertex3f(center[0], center[1], center[2]);
+        glEnd() ;
+}
+
 void mydisplayfunc()
 {
 	void *ptr;
@@ -126,6 +134,7 @@ void mydisplayfunc()
 	glEnable(GL_DEPTH_TEST);
 	do_material();
 	render_ball();
+	draw_string();
 	glCallList(LWALL);
 	glCallList(RWALL);
 	glCallList(FLOOR);
@@ -214,8 +223,6 @@ void build_call_lists()
 	glNewList(LBORDER,GL_COMPILE);
 	glBegin(GL_LINES);
 	glColor4f(1.0,1.0,1.0,0.8);
-	glVertex3f(-1.25,0.0,-1.25);
-	glVertex3f(-1.25,1.0,-1.25);
 	glVertex3f(-1.25,1.0,-1.25);
 	glVertex3f(-1.25,1.0,1.25);
 	glVertex3f(-1.25,1.0,1.25);
@@ -229,8 +236,6 @@ void build_call_lists()
 	glVertex3f(1.25,1.0,-1.25);
 	glVertex3f(1.25,1.0,-1.25);
 	glVertex3f(-1.25,1.0,-1.25);
-	glVertex3f(-1.25,1.0,-1.25);
-	glVertex3f(-1.25,0.0,-1.25);
 	glEnd();
 	glEndList();
 }
