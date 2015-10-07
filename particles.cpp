@@ -22,7 +22,7 @@
 
 GLuint OGL_VBO = 1;
 GLuint OGL_CBO = 2;
-#define NUMBER_OF_PARTICLES 512*512
+#define NUMBER_OF_PARTICLES 1024*1024
 #define DATA_SIZE (NUMBER_OF_PARTICLES*4*sizeof(float)) 
 
 cl_context mycontext;
@@ -39,6 +39,11 @@ float host_velocity[NUMBER_OF_PARTICLES][4];
 float host_rseed[NUMBER_OF_PARTICLES];
 float center[4] = {0.0, 0.0, 0.0, 1.0};
 float angle = 0.0f;
+
+double genrand()
+{
+	return(((double)(random()+1))/2147483649.);
+}
 
 void do_kernel()
 {
@@ -79,7 +84,7 @@ void do_sphere_material()
 	float mat_ambient[] = {0.0,0.0,0.0,1.0};
 	float mat_diffuse[] = {0.75,0.75,0.75,1.0};
 	float mat_specular[] = {0.25,0.25,0.25,1.0};
-	float mat_shininess[] = {2.0};
+	float mat_shininess[] = {15.0};
 
 	glMaterialfv(GL_FRONT,GL_AMBIENT,mat_ambient);
 	glMaterialfv(GL_FRONT,GL_DIFFUSE,mat_diffuse);
@@ -123,15 +128,17 @@ void render_sphere()
 void draw_string()
 {
 	glBegin(GL_LINES);
-        glVertex3f(0.0, 2.0, 0.0);
-        glVertex3f(center[0], center[1], center[2]);
-        glEnd() ;
+	glVertex3f(0.0, 2.0, 0.0);
+	glVertex3f(center[0], center[1], center[2]);
+	glEnd() ;
 }
+
+float y_pos = 0.5f;
 
 void mydisplayfunc()
 {
 	void *ptr;
-	angle += 0.01f;
+	angle += 0.015f;
 	center[0] = cosf(angle);
 	center[1] = 0.5f;
 	center[2] = sinf(angle);	
@@ -180,8 +187,8 @@ void mydisplayfunc()
 
 void setup_the_viewvol()
 {
-	float eye[] = {2.5, 1.8, 2.0};
-	float view[] = {0.0, 0.0, 0.0};
+	float eye[] = {2.9, 1.8, 2.4};
+	float view[] = {0.0, 0.3, 0.0};
 	float up[] = {0.0, 1.0, 0.0};
 
 	glMatrixMode(GL_PROJECTION);
@@ -207,8 +214,8 @@ void build_call_lists()
 	glBegin(GL_QUADS);
 	glNormal3f(1.0,0.0,0.0);
 	glVertex3f(-1.25,0.0,1.25);
-	glVertex3f(-1.25,1.0,1.25);
-	glVertex3f(-1.25,1.0,-1.25);
+	glVertex3f(-1.25,1.5,1.25);
+	glVertex3f(-1.25,1.5,-1.25);
 	glVertex3f(-1.25,0.0,-1.25);
 	glEnd();
 	glEndList();
@@ -216,8 +223,8 @@ void build_call_lists()
 	glBegin(GL_QUADS);
 	glNormal3f(0.0,0.0,1.0);
 	glVertex3f(1.25,0.0,-1.25);
-	glVertex3f(1.25,1.0,-1.25);
-	glVertex3f(-1.25,1.0,-1.25);
+	glVertex3f(1.25,1.5,-1.25);
+	glVertex3f(-1.25,1.5,-1.25);
 	glVertex3f(-1.25,0.0,-1.25);
 	glEnd();
 	glEndList();
@@ -237,9 +244,9 @@ void build_call_lists()
 	glNewList(LBORDER,GL_COMPILE);
 	glBegin(GL_LINES);
 	glColor4f(1.0,1.0,1.0,0.8);
-	glVertex3f(-1.25,1.0,-1.25);
-	glVertex3f(-1.25,1.0,1.25);
-	glVertex3f(-1.25,1.0,1.25);
+	glVertex3f(-1.25,1.5,-1.25);
+	glVertex3f(-1.25,1.5,1.25);
+	glVertex3f(-1.25,1.5,1.25);
 	glVertex3f(-1.25,0.0,1.25);
 	glEnd();
 	glEndList();
@@ -247,9 +254,9 @@ void build_call_lists()
 	glBegin(GL_LINES);
 	glColor4f(1.0,1.0,1.0,0.8);
 	glVertex3f(1.25,0.0,-1.25);
-	glVertex3f(1.25,1.0,-1.25);
-	glVertex3f(1.25,1.0,-1.25);
-	glVertex3f(-1.25,1.0,-1.25);
+	glVertex3f(1.25,1.5,-1.25);
+	glVertex3f(1.25,1.5,-1.25);
+	glVertex3f(-1.25,1.5,-1.25);
 	glEnd();
 	glEndList();
 }
@@ -272,11 +279,6 @@ void InitGL(int argc, char** argv)
 	build_call_lists();
 	glewInit();
 	return;
-}
-
-double genrand()
-{
-	return(((double)(random()+1))/2147483649.);
 }
 
 void init_particles()

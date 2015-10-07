@@ -1,7 +1,7 @@
-#define STEPS_PER_RENDER 20
+#define STEPS_PER_RENDER 1
 #define MASS 1.0f
-#define DELTA_T (0.003f)
-#define COLORS 3
+#define DELTA_T (0.060f)
+#define COLORS 255
 
 #define GRAVITY_CONSTANT 0.3f // scale of gravitational pull to sphere
 #define SPHERE_RADIUS 0.25f
@@ -9,7 +9,7 @@
 #define SPHERE_RESTITUTION 2.0f
 
 #define WALL_DIST 1.25f
-#define CEIL_DIST 1.0f
+#define CEIL_DIST 1.5f
 #define FLOOR_DIST 0.0f
 #define PLANE_FRICTION 0.6f
 #define PLANE_RESTITUTION 2.0f
