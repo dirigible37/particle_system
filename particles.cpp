@@ -128,7 +128,7 @@ void render_sphere()
 void draw_string()
 {
 	glBegin(GL_LINES);
-	glVertex3f(0.0, 2.0, 0.0);
+	glVertex3f(0.0, 3.0, 0.0);
 	glVertex3f(center[0], center[1], center[2]);
 	glEnd() ;
 }
@@ -285,9 +285,9 @@ void init_particles()
 {
 	int i, j;
 	for(i=0;i<NUMBER_OF_PARTICLES;i++){
-		host_position[i][0] = 2.0*(genrand()-0.5);
-		host_position[i][1] = (genrand());
-		host_position[i][2] = 2.0*(genrand()-0.5);
+		host_position[i][0] = 2.5*(genrand()-0.5);
+		host_position[i][1] = 1.5*genrand();
+		host_position[i][2] = 2.5*(genrand()-0.5);
 		host_position[i][3] = 1.0;
 		host_color[i][0] = 1.0;
 		host_color[i][1] = 1.0;

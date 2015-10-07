@@ -14,8 +14,6 @@
 #define PLANE_RESTITUTION 2.0f
 #define EPS_DOWN (-0.25f)
 #define V_DRAG (2.0f)
-#define MULT (87.0f)
-#define MOD (3647.0f)
 
 float4 getforce(float4 tocenter, float4 vel)
 {
@@ -35,12 +33,6 @@ void planecollision(__global float4 *p, __global float4 *v, float4 normal, float
 		float4 zoom = dot(*v, normal) * normal;
 		*v -= (1.0f+PLANE_RESTITUTION)*zoom + PLANE_FRICTION*normalize(*v-zoom);
 	}
-}
-
-float goober(float prev)
-{
-	prev *= (MOD*MULT);
-	return(fmod(prev,MOD)/MOD);
 }
 
 __kernel void VVerlet(__global float4* p, __global float4* c, __global float4* v, __global float* r, float4 center)
