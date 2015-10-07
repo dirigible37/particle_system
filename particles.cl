@@ -1,7 +1,6 @@
 #define STEPS_PER_RENDER 20
 #define MASS 1.0f
 #define DELTA_T (0.003f)
-#define COLORS 3
 
 #define GRAVITY_CONSTANT 0.3f // scale of gravitational pull to sphere
 #define SPHERE_RADIUS 0.25f
@@ -78,7 +77,7 @@ __kernel void VVerlet(__global float4* p, __global float4* c, __global float4* v
 		planecollision(&p[i], &v[i], (float4)(0.0f,0.0f,-1.0f,0.0f), -WALL_DIST);
 	}
 
-	c[i].x = floor(((p[i].x+1.25)/2.5)*COLORS)/(COLORS-1);
-	c[i].y = floor(p[i].y*COLORS)/(COLORS-1);
-	c[i].z = floor(((p[i].z+1.25)/2.5)*COLORS)/(COLORS-1);;
+	c[i].x = (p[i].x+1.25f)/2.5f;
+	c[i].y = p[i].y;
+	c[i].z = (p[i].z+1.25f)/2.5f;
 }
