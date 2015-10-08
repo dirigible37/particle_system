@@ -366,6 +366,7 @@ void cleanup()
 	glDeleteBuffers(1,&OGL_VBO);
 	glDeleteBuffers(1,&OGL_CBO);
 	clReleaseMemObject(oclvbo);
+	clReleaseMemObject(oclcbo);
 	clReleaseMemObject(dev_velocity);
 	clReleaseMemObject(dev_rseed);
 	clReleaseContext(mycontext);
